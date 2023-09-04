@@ -15,5 +15,6 @@
 
         public void AdicionarErros(IEnumerable<string> erros) =>
             Errors.AddRange(erros);
+
     }
 }

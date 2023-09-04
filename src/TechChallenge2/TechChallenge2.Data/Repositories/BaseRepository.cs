@@ -38,22 +38,29 @@ namespace TechChallenge2.Data.Repositories
                 .ToListAsync();
         }
 
-        public virtual async Task Remove(int id)
+        public virtual async Task<bool> Remove(int id)
         {
             var obj = await Get(id);
-            if (obj != null)
+            if (obj == null)
             {
-                _context.Remove(obj);
-                await _context.SaveChangesAsync();
-            }
+                return false;
+            }   
+            _context.Remove(obj);
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         public virtual async Task<T> Update(T obj)
         {
-            _context.Entry(obj).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-            await _context.SaveChangesAsync();
+            var objValid = await Get(obj.Id);
+            if (objValid != null)
+            {
+                _context.Entry(obj).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                await _context.SaveChangesAsync();
+                return obj;
+            }
 
-            return obj;
+            return objValid;
         }
     }
 }

@@ -6,7 +6,7 @@ namespace TechChallenge2.Domain.Interfaces.Repositories
     {
         Task<T> Create(T obj);
         Task<T> Update(T obj);
-        Task Remove(int id);
+        Task<bool> Remove(int id);
         Task<T> Get(int id);
         Task<List<T>> Get();
     }

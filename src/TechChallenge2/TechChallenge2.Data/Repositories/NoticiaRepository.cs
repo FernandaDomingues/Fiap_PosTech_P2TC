@@ -25,7 +25,7 @@ namespace TechChallenge2.Data.Repositories
                         where noticia.Id == id
                         select noticia;
 
-            return await query.FirstAsync();
+            return await query.FirstOrDefaultAsync();
         }
     }
 }

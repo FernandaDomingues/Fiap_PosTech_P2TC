@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Azure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
@@ -37,9 +38,9 @@ namespace TechChallenge2.Api.Controllers
         [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        [Authorize]
         [HttpPost("create")]
-        [Consumes("multipart/form-data")]
-        public async Task<ActionResult> Create([FromForm] NoticiaRequest noticiaRequest)
+        public async Task<ActionResult> Create([FromBody] NoticiaRequest noticiaRequest)
         {
             try
             {
@@ -72,23 +73,21 @@ namespace TechChallenge2.Api.Controllers
         [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-        [HttpPut("update")]
-        [Consumes("multipart/form-data")]
-        public async Task<ActionResult> Update([FromForm][Required] int id,[FromForm] NoticiaRequest noticiaRequest)
+        [HttpPut("update/{id}")]
+        [Authorize]
+        public async Task<ActionResult> Update([Required] int id,[FromBody] NoticiaRequest noticiaRequest)
         {
             try
             {
                 var noticia = _mapper.Map<Noticia>(noticiaRequest);
                 noticia.Id = id;
-                var noticiaUpdated = await _noticiaService.Update(noticia);
+                var response = await _noticiaService.Update(noticia);
 
-                return Ok(new BaseResponse
-                {
-                    Message = "Notícia alterada com sucesso!",
-                    Success = true,
-                    Errors = null,
-                    Data = noticiaUpdated
-                });
+                if (response.Success)
+                    return Ok(response);
+
+                return BadRequest(response);
+
             }
             catch (DomainException ex)
             {
@@ -108,7 +107,7 @@ namespace TechChallenge2.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         [HttpGet("get")]
-        [Consumes("multipart/form-data")]
+        [Authorize]
         public async Task<ActionResult> Get()
         {
             try
@@ -141,22 +140,19 @@ namespace TechChallenge2.Api.Controllers
         [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-        [HttpGet("getById")]
-        [Consumes("multipart/form-data")]
+        [HttpGet("getById/{id}")]
+        [Authorize]
         public async Task<ActionResult> GetById(int id)
         {
             try
             {
 
-                var noticia = await _noticiaService.GetById(id);
+                var response = await _noticiaService.GetById(id);
 
-                return Ok(new BaseResponse
-                {
-                    Message = "Notícia resgatada com sucesso!",
-                    Success = true,
-                    Errors = null,
-                    Data = noticia
-                });
+                if (response.Success)
+                    return Ok(response);
+
+                return BadRequest(response);
             }
             catch (DomainException ex)
             {
@@ -168,39 +164,35 @@ namespace TechChallenge2.Api.Controllers
             }
         }
 
-        ///// <summary>
-        ///// Endpoint responsável por cadastrar nova noticia
-        ///// </summary>
-        ///// <param name="noticiaRequest"></param>
-        ///// <returns></returns>
-        //[ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-        //[HttpPatch("deletar")]
-        //[Consumes("multipart/form-data")]
-        //public async Task<ActionResult> Delete([FromForm] NoticiaRequest noticiaRequest)
-        //{
-        //    try
-        //    {
-        //        var noticia = _mapper.Map<Noticia>(noticiaRequest);
-        //        var noticiaCreated = await _noticiaService.Create(noticia);
+        /// <summary>
+        /// Endpoint responsável por deletar noticia pelo id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        [HttpDelete("remove/{id}")]
+        [Authorize]
+        public async Task<ActionResult> Remove(int id)
+        {
+            try
+            {
+                var response = await _noticiaService.Remove(id);
+                if (response.Success)
+                    return Ok(response);
 
-        //        return Ok(new BaseResponse
-        //        {
-        //            Message = "Solicitação cadastrada com sucesso!",
-        //            Success = true,
-        //            Errors = null,
-        //            Data = noticiaCreated
-        //        });
-        //    }
-        //    catch (DomainException ex)
-        //    {
-        //        return BadRequest(ResponsesExceptions.DomainErrorMessage(ex.Message, ex.Errors));
-        //    }
-        //    catch (Exception)
-        //    {
-        //        return StatusCode(500, ResponsesExceptions.ApplicationErrorMessage());
-        //    }
-        //}
+                return BadRequest(response);
+
+            }
+            catch (DomainException ex)
+            {
+                return BadRequest(ResponsesExceptions.DomainErrorMessage(ex.Message, ex.Errors));
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, ResponsesExceptions.ApplicationErrorMessage());
+            }
+        }
     }
 }
