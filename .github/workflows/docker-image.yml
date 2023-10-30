@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: .NET
 
 on:
   push:
@@ -7,12 +7,45 @@ on:
     branches: [ "main" ]
 
 jobs:
-
-  build:
+  test:
 
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag techchallenge:v1
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+        
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Build
+      run: dotnet build --no-restore
+      
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
+      working-directory: ./src/TechChallenge.Tests
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Build-Application
+      run: docker-compose build
+      working-directory: ./src/docker-compose.yml
+
+    - name: Start-Application
+      run: docker-compose up -d
+      working-directory: ./src/docker-compose.yml
+        
+    - name: Test-Integration
+      run: newman run TechChallenge2.postman_collection.json -e TechChallenge2.postman_environment.json
+      working-directory: ./src/TechChallenge2.IntegrationTest    
