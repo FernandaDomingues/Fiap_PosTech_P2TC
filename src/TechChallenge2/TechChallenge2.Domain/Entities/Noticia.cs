@@ -13,6 +13,10 @@ namespace TechChallenge2.Domain.Entities
     [Table("Noticia")]
     public class Noticia : Base
     {
+        public Noticia()
+        {
+            
+        }
 
         [Required(ErrorMessage = "O campo Titulo é obrigatório.")]
         [StringLength(255, MinimumLength = 3, ErrorMessage = "O campo Titulo deve ter entre 3 e 255 caracteres.")]
@@ -30,10 +34,18 @@ namespace TechChallenge2.Domain.Entities
         [StringLength(255, MinimumLength = 3, ErrorMessage = "O campo Autor deve ter entre 3 e 255 caracteres.")]
         public string Autor { get; set; }
 
-        protected Noticia() { }
 
         public Noticia(string titulo, string conteudo, DateTime dataPublicacao, string autor)
         {
+            Titulo = titulo;
+            Conteudo = conteudo;
+            DataPublicacao = dataPublicacao;
+            Autor = autor;
+        }
+
+        public Noticia(int id, string titulo, string conteudo, DateTime dataPublicacao, string autor)
+        {
+            Id = id;
             Titulo = titulo;
             Conteudo = conteudo;
             DataPublicacao = dataPublicacao;
