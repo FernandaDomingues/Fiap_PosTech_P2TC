@@ -18,18 +18,18 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 6.0.x
-        working-directory: ./src/
         
     - name: Restore dependencies
+      working-directory: ./src/
       run: dotnet restore
       
     - name: Build
-      run: dotnet build --no-restore
       working-directory: ./src/
+      run: dotnet build --no-restore
       
     - name: Test
-      run: dotnet test --no-build --verbosity normal
       working-directory: ./src/TechChallenge.Tests
+      run: dotnet test --no-build --verbosity normal
 
   build:
     needs: test
@@ -42,13 +42,14 @@ jobs:
         dotnet-version: 6.0.x
 
     - name: Build-Application
-      run: docker-compose build
       working-directory: ./src/docker-compose.yml
+      run: docker-compose build
 
     - name: Start-Application
-      run: docker-compose up -d
       working-directory: ./src/docker-compose.yml
+      run: docker-compose up -d
         
     - name: Test-Integration
+      working-directory: ./src/TechChallenge2.IntegrationTest
       run: newman run TechChallenge2.postman_collection.json -e TechChallenge2.postman_environment.json
-      working-directory: ./src/TechChallenge2.IntegrationTest    
+          
